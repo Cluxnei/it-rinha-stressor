@@ -1,0 +1,11 @@
+{
+  "name": "it-rinha-stressor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:Cluxnei/it-rinha-stressor.git",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "18.18"
+  }
+}
