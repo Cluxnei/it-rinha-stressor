@@ -1,27 +1,26 @@
 import {writeFile} from 'node:fs/promises';
+import casual from 'casual';
 
 const requestDefinition = {
-    getGoogle: {
-        method: 'get',
-        url: 'https://www.google.com',
-        getPayload: () => null,
+    createPeople: {
+        method: 'post',
+        url: 'http://localhost:3000/people',
+        getPayload: () => {
+            const payload = {
+                name: casual.name,
+                email: casual.email,
+                phone: casual.phone,
+            };
+            console.log({payload});
+            return payload;
+        },
         getHeaders: () => null,
     },
-    getYoutube: {
-        method: 'get',
-        url: 'https://www.youtube.com',
-        getPayload: () => null,
-        getHeaders: () => null,
-    }
 };
 
 const requestExecution = {
-    getGoogle: {
-        iterations: 1000,
-        results: [],
-    },
-    getYoutube: {
-        iterations: 1000,
+    getItalents: {
+        iterations: 7000,
         results: [],
     },
 }

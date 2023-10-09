@@ -7,5 +7,12 @@
   "type": "module",
   "engines": {
     "node": "18.18"
+  },
+  "dependencies": {
+    "casual": "^1.6.2",
+    "prettier": "^3.0.3"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.1.0"
   }
 }
