@@ -1,8 +1,5 @@
 import { faker } from "@faker-js/faker";
-import {
-  UNPROCESSABLE_PEOPLE_COUNT,
-  UNSEARCHABLE_TERMS_COUNT,
-} from "../constants/general.js";
+import { UNSEARCHABLE_TERMS_COUNT } from "../constants/general.js";
 
 export const createSearchableTerms = (validPeople) => {
   const label = `creating searchable terms mock data`;
