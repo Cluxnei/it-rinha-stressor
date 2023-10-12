@@ -28,7 +28,7 @@ export const validPeopleFactory = (useUniqueNicknames = true) => {
       : faker.person.firstName()
     ).substring(0, NICKNAME_MAX_LENGTH),
     nome: faker.person.fullName().substring(0, NAME_MAX_LENGTH),
-    nascimento: faker.date.anytime().toISOString().split(" ").shift(),
+    nascimento: faker.date.anytime().toISOString().split("T").shift(),
     stack,
   };
 };
@@ -68,7 +68,7 @@ const nullablePropsFromPeople = (peopleRef) => {
     nascimento: faker.datatype.boolean(),
   };
   let nullable = false;
-  for (const key of Object.keys(nullables)) {
+  for (const key in nullables) {
     if (!nullables[key]) {
       continue;
     }
@@ -83,8 +83,7 @@ const nullablePropsFromPeople = (peopleRef) => {
 
 const changePropsTypesFromPeople = (peopleRef) => {
   const people = unrefPeople(peopleRef);
-  const randomType = () =>
-    faker.helpers.arrayElement([1, true, "", null, -2023]);
+  const randomType = () => faker.helpers.arrayElement([1, true, "", -2023]);
   const change = {
     apelido: faker.datatype.boolean(),
     nome: faker.datatype.boolean(),
@@ -119,18 +118,11 @@ const changePropsTypesFromPeople = (peopleRef) => {
 };
 
 export const badPeopleFactory = (peopleRef) => {
-  let people = unrefPeople(peopleRef);
-  if (faker.datatype.boolean()) {
-    people = removePropsFromPeople(people);
-  }
-  if (faker.datatype.boolean()) {
-    people = changePropsTypesFromPeople(people);
-  }
-  return people;
+  return removePropsFromPeople(changePropsTypesFromPeople(peopleRef));
 };
 
 export const unprocessablePeopleFactory = (peopleRef) => {
-  return nullablePropsFromPeople(unrefPeople(peopleRef));
+  return nullablePropsFromPeople(peopleRef);
 };
 
 export const createValidMockData = (callback) => {

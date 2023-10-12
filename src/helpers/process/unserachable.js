@@ -1,32 +1,20 @@
 import {
   HTTP_STATUS_CODE_POINTS,
-  SEARCH_EXECUTION_RPS,
+  UNSEARCHABLE_EXECUTION_RPS,
 } from "../../constants/general.js";
-import { faker } from "@faker-js/faker";
 import { delay } from "../delay.js";
 import { collectAll } from "../collect.js";
 import { doSearchRequest } from "../requests/doSearchRequest.js";
+import { createChunk } from "../chunk.js";
+import { doRequest } from "../requests/doRequest.js";
 
 const doUnsearchableRequest = async (term) => {
-  let status = "unknown";
-  let body = null;
-  try {
-    const response = await doSearchRequest(term);
-    status = response.status;
-    body = await response.json();
-  } catch (error) {}
-  return {
-    points: HTTP_STATUS_CODE_POINTS[String(status)],
-    matchStatus: status === 200,
-    matchBody: body && Array.isArray(body) && body.length === 0,
-    needsMatchBody: true,
-  };
-};
-
-const createChunk = (terms, processesCount) => {
-  return new Array(Math.min(processesCount, terms.length))
-    .fill(0)
-    .map(() => doUnsearchableRequest(terms.pop()));
+  return doRequest(
+    term,
+    doSearchRequest,
+    200,
+    (body) => body && Array.isArray(body) && body.length === 0,
+  );
 };
 
 export const unsearchableTermsProcess = async (unsearchableTerms) => {
@@ -34,9 +22,13 @@ export const unsearchableTermsProcess = async (unsearchableTerms) => {
   const chunks = [];
   let dispatchedProcesses = 0;
   while (dispatchedProcesses < shallowTerms.length) {
-    const chunk = createChunk(shallowTerms, SEARCH_EXECUTION_RPS);
+    const chunk = createChunk(
+      shallowTerms,
+      UNSEARCHABLE_EXECUTION_RPS,
+      doUnsearchableRequest,
+    );
     chunks.push(collectAll(chunk));
-    dispatchedProcesses += chunks.length;
+    dispatchedProcesses += chunk.length;
     await delay(1000);
   }
   await Promise.allSettled(chunks);

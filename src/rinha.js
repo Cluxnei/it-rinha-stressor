@@ -16,6 +16,7 @@ import {
   setMeasureFixedData,
   startMeasure,
 } from "./helpers/measure.js";
+import { invalidPeopleProcess } from "./helpers/process/invalidPeople.js";
 
 function generateMockData() {
   const label = "generating mock data";
@@ -48,7 +49,7 @@ async function main() {
   startMeasure();
   await pipeAll([
     // validPeopleProcess(mockData.validPeople),
-    // invalidPeopleProcess(mockData.badPeople, mockData.unprocessablePeople),
+    invalidPeopleProcess(mockData.badPeople, mockData.unprocessablePeople),
     unsearchableTermsProcess(mockData.unSearchableTerms),
   ]);
   // await pipeAll([searchableTermsProcess(mockData.searchableTerms)]);
