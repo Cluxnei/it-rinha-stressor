@@ -1,7 +1,6 @@
 import {
   HTTP_STATUS_CODE_POINTS,
-  SEARCH_EXECUTION_CHUNKS_COUNT,
-  SEARCH_EXECUTION_DELAY_RANGE,
+  SEARCH_EXECUTION_RPS,
 } from "../../constants/general.js";
 import { faker } from "@faker-js/faker";
 import { delay } from "../delay.js";
@@ -32,17 +31,13 @@ const createChunk = (terms, processesCount) => {
 
 export const unsearchableTermsProcess = async (unsearchableTerms) => {
   const shallowTerms = [...unsearchableTerms];
-  const processPerChunk = Math.ceil(
-    shallowTerms.length / SEARCH_EXECUTION_CHUNKS_COUNT,
-  );
-
-  for (let i = 0; i < SEARCH_EXECUTION_CHUNKS_COUNT; i++) {
-    const chunk = createChunk(shallowTerms, processPerChunk);
-    await collectAll(chunk);
-    const ms = faker.number.int({
-      min: SEARCH_EXECUTION_DELAY_RANGE[0],
-      max: SEARCH_EXECUTION_DELAY_RANGE[1],
-    });
-    await delay(ms);
+  const chunks = [];
+  let dispatchedProcesses = 0;
+  while (dispatchedProcesses < shallowTerms.length) {
+    const chunk = createChunk(shallowTerms, SEARCH_EXECUTION_RPS);
+    chunks.push(collectAll(chunk));
+    dispatchedProcesses += chunks.length;
+    await delay(1000);
   }
+  await Promise.allSettled(chunks);
 };

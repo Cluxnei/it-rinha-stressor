@@ -11,8 +11,15 @@ import {
 import { pipeAll } from "./helpers/pipe.js";
 import { unsearchableTermsProcess } from "./helpers/process/unserachable.js";
 import { showCollection } from "./helpers/collect.js";
+import {
+  endMeasure,
+  setMeasureFixedData,
+  startMeasure,
+} from "./helpers/measure.js";
 
 function generateMockData() {
+  const label = "generating mock data";
+  console.time(label);
   const mockData = {
     validPeople: createValidMockData(() => {
       resetGeneratedNicknames();
@@ -24,17 +31,28 @@ function generateMockData() {
   mockData.unSearchableTerms = createUnsearchableTerms(
     mockData.searchableTerms,
   );
+  console.timeEnd(label);
+  const mockMetadata = Object.keys(mockData).reduce(
+    (acc, key) => ({
+      ...acc,
+      [key]: mockData[key].length,
+    }),
+    {},
+  );
+  setMeasureFixedData(mockMetadata);
   return mockData;
 }
 
 async function main() {
   const mockData = generateMockData();
+  startMeasure();
   await pipeAll([
     // validPeopleProcess(mockData.validPeople),
     // invalidPeopleProcess(mockData.badPeople, mockData.unprocessablePeople),
     unsearchableTermsProcess(mockData.unSearchableTerms),
   ]);
   // await pipeAll([searchableTermsProcess(mockData.searchableTerms)]);
+  endMeasure();
   showCollection();
 }
 

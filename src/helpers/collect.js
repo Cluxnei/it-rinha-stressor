@@ -1,8 +1,15 @@
+import { measureRequestDispatch, measureRequestResponse } from "./measure.js";
+
 const responses = [];
+let lastCollectionId = 0;
+
+const getCollectionId = () => lastCollectionId++;
 
 export const collect = async (request) => {
-  console.log("collecting request");
+  const collectionId = getCollectionId();
+  measureRequestDispatch(collectionId);
   const response = await request;
+  measureRequestResponse();
   const { points, matchStatus, matchBody, needsMatchBody } = response;
   let assertPoint = true;
   if (!matchStatus || (needsMatchBody && !matchBody)) {
@@ -13,7 +20,6 @@ export const collect = async (request) => {
     response,
     score,
   };
-  console.log(r);
   responses.push(r);
 };
 
@@ -30,9 +36,9 @@ export const collectAll = async (requests) => {
 };
 
 export const showCollection = () => {
-  console.log({
+  console.table({
     responsesCount: responses.length,
     totalScore: responses.reduce((acc, { score }) => acc + score, 0),
-    failedResponses: responses.filter(({ score }) => score < 0),
+    failedResponsesCount: responses.filter(({ score }) => score < 0).length,
   });
 };

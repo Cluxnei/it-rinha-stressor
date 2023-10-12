@@ -16,5 +16,4 @@ export const HTTP_STATUS_CODE_POINTS = {
   unknown: 1,
 };
 
-export const SEARCH_EXECUTION_CHUNKS_COUNT = 10;
-export const SEARCH_EXECUTION_DELAY_RANGE = [500, 3000];
+export const SEARCH_EXECUTION_RPS = 1000;
