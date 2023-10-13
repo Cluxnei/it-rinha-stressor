@@ -1,7 +1,4 @@
-import {
-  HTTP_STATUS_CODE_POINTS,
-  UNSEARCHABLE_EXECUTION_RPS,
-} from "../../constants/general.js";
+import { UNSEARCHABLE_EXECUTION_RPS } from "../../constants/general.js";
 import { delay } from "../delay.js";
 import { collectAll } from "../collect.js";
 import { doSearchRequest } from "../requests/doSearchRequest.js";

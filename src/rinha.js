@@ -10,7 +10,7 @@ import {
 } from "./factories/terms.js";
 import { pipeAll } from "./helpers/pipe.js";
 import { unsearchableTermsProcess } from "./helpers/process/unserachable.js";
-import { showCollection } from "./helpers/collect.js";
+import { saveCollection, showCollection } from "./helpers/collect.js";
 import {
   endMeasure,
   setMeasureFixedData,
@@ -55,6 +55,7 @@ async function main() {
   // await pipeAll([searchableTermsProcess(mockData.searchableTerms)]);
   endMeasure();
   showCollection();
+  await saveCollection();
 }
 
 console.time("total");

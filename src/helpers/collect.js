@@ -1,4 +1,6 @@
 import { measureRequestDispatch, measureRequestResponse } from "./measure.js";
+import { mkdir } from "node:fs/promises";
+import { saveJson } from "./json.js";
 
 const responses = [];
 const errors = [];
@@ -55,35 +57,71 @@ const getErrorsTable = (entries, includeBody = false) => {
       measured.responses.push({ responseBody, requestBody });
     }
   }
-  return expectedVsReceived;
+  return expectedVsReceived.map((r) => ({ ...r, received: [...r.received] }));
 };
 
-export const showCollection = () => {
+const getSummaryData = () => {
   const failedResponses = responses.filter(({ score }) => score < 0);
-  console.table(
-    [
-      { metric: "responsesCount", value: responses.length },
-      {
-        metric: "totalScore",
-        value: responses.reduce((acc, { score }) => acc + score, 0),
-      },
-      { metric: "failedResponsesCount", value: failedResponses.length },
-      {
-        metric: "failedResponseStatus",
-        value: new Set(
+  return [
+    { metric: "responsesCount", value: responses.length },
+    {
+      metric: "totalScore",
+      value: responses.reduce((acc, { score }) => acc + score, 0),
+    },
+    { metric: "failedResponsesCount", value: failedResponses.length },
+    {
+      metric: "failedResponseStatus",
+      value: [
+        ...new Set(
           failedResponses.map(
             ({ response: { responseStatus } }) => responseStatus,
           ),
         ),
-      },
-    ],
-    ["metric", "value"],
-  );
+      ],
+    },
+  ];
+};
+
+export const showCollection = () => {
+  const failedResponses = responses.filter(({ score }) => score < 0);
+  console.table(getSummaryData(), ["metric", "value"]);
   console.log("showing errors...");
   console.table(getErrorsTable(errors), ["expected", "received"]);
   console.log("showing failed...");
   console.table(
     getErrorsTable(
+      failedResponses.map(
+        ({ response: { responseStatus, expectedStatus } }) => ({
+          status: responseStatus,
+          expectedStatus,
+        }),
+      ),
+    ).map((r) => ({ ...r, responses: JSON.stringify(r.responses) })),
+    ["expected", "received", "responses"],
+  );
+};
+
+export const saveCollection = async () => {
+  const label = "compiling collections";
+  console.time(label);
+  const collectionId = `${new Date().toISOString()}_${(
+    Math.random().toString(16).substring(3) +
+    Math.random().toString(16).substring(3)
+  ).substring(0, 255)}`;
+  const names = {
+    summary: `results/${collectionId}/summary.json`,
+    responses: `results/${collectionId}/responses.json`,
+    errors: `results/${collectionId}/errors.json`,
+    errorTable: `results/${collectionId}/error_table.json`,
+  };
+  console.timeLog(label, "saving results...");
+  await mkdir(`results/${collectionId}`);
+  const failedResponses = responses.filter(({ score }) => score < 0);
+  const data = {
+    summary: getSummaryData(),
+    responses,
+    errors,
+    errorTable: getErrorsTable(
       failedResponses.map(
         ({
           response: {
@@ -100,7 +138,11 @@ export const showCollection = () => {
         }),
       ),
       true,
-    ).map((r) => ({ ...r, responses: JSON.stringify(r.responses) })),
-    ["expected", "received", "responses"],
-  );
+    ),
+  };
+  for (const key in names) {
+    await saveJson(names[key], data[key]);
+  }
+  console.timeEnd(label);
+  console.log(`collection saved at results/${collectionId}/*`);
 };
